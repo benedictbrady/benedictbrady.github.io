@@ -42,7 +42,7 @@ h2 {
 
 a:link,
 a:visited {
-  color: blue;
+  color: rbg(116, 23, 191);
 }
 
 code,
