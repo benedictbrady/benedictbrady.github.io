@@ -58,3 +58,11 @@ code,
   background-color: rgba(0, 0, 0, 0.04);
   border-radius: 3px;
 }
+
+#investments ul li {
+    margin-bottom: 5px; /* Reduces space between list items */
+}
+
+#investments p {
+    margin: 0; /* Removes default top and bottom margins from paragraphs */
+}
