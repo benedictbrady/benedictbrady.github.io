@@ -1,17 +1,16 @@
 title,
 .title {
-  text-align: left;
+  text-align: center;
   margin-bottom: 0.2em;
-  font-size: 36px;
 }
 
 footer,
 .footer {
-  text-align: left;
+  text-align: center;
 }
 
 .subtitle {
-  text-align: left;
+  text-align: center;
   font-size: medium;
   font-weight: bold;
   margin-top: 0;
@@ -33,7 +32,7 @@ h3 {
 
 h1 {
   font-style: italic;
-  font-size: 20px;
+  font-size: 24px;
 }
 
 h2 {
@@ -61,9 +60,9 @@ code,
 }
 
 #investments ul li {
-    margin-bottom: 5px; /* Reduces space between list items */
+    margin-bottom: 5px;
 }
 
 #investments p {
-    margin: 0; /* Removes default top and bottom margins from paragraphs */
+    margin: 0;
 }
