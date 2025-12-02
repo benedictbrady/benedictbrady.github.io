@@ -23,6 +23,10 @@ body {
   padding: 0 10px;
   margin: 60px auto;
   max-width: 700px;
+  background-color: #f5f0e6;
+  background-image: url("noise.png");
+  background-repeat: repeat;
+  color: #333;
 }
 
 h2,
@@ -43,7 +47,7 @@ h2 {
 
 a:link,
 a:visited {
-  color: blue;
+  color: #2e7ab8;
 }
 
 code,
