@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Payment for Order Flow on Solana"
+    />
+
+    <title>PFOF on Solana | Meridian</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5em 0;
+        font-size: 14px;
+      }
+      th, td {
+        border: 1px solid #999;
+        padding: 8px 12px;
+        text-align: right;
+      }
+      th {
+        background-color: rgba(0,0,0,0.05);
+        font-weight: bold;
+      }
+      td:first-child, th:first-child {
+        text-align: left;
+      }
+      .tx-stack-wrapper {
+        margin: 2em 0;
+        padding: 2em 4em;
+        background: rgba(0,0,0,0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+      }
+      .tx-stack {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+      .tx-stack-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .tx-stack-header {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #666;
+        margin-bottom: 10px;
+        text-align: center;
+        height: 16px;
+      }
+      .tx-stack-items {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tx-stack-box {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px 24px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        min-width: 120px;
+      }
+      .tx-stack-box.app-box {
+        background: #2e7ab8;
+        color: #fff;
+        border: 1px solid #2e7ab8;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 40px 24px;
+      }
+      .tx-stack-box.builder-box {
+        padding: 18px 24px;
+      }
+      .tx-stack-arrow {
+        color: #999;
+        font-size: 18px;
+        margin-top: 26px;
+      }
+      @media (max-width: 640px) {
+        .tx-stack-wrapper {
+          padding: 1.5em 2em;
+        }
+        .tx-stack {
+          flex-direction: column;
+          gap: 16px;
+        }
+        .tx-stack-arrow {
+          transform: rotate(90deg);
+        }
+        .tx-stack-box {
+          min-width: auto;
+          width: 100%;
+          max-width: 200px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="preamble">
+      <p><a href="/">&larr; Back</a></p>
+      <h1 class="title">Payment for Order Flow on Solana</h1>
+      <p class="subtitle" style="font-weight: normal; font-style: italic;">This is adapted from a talk I gave at MEV Day before Breakpoint in 2025. All data in this article is from the week of December 1–8, 2025.</p>
+
+      <div id="introduction">
+        <h1>Introduction</h1>
+        <p>Application developers who own the user hold a privileged role in financial markets. They get to decide where trades are routed and how they are filled. While much is known about how this works in traditional markets, there has been nearly nothing written publicly about how orderflow is routed and monetized on Solana, the largest decentralized spot market in the world.</p>
+        <p>This report is an attempt to pull back the curtain on how apps monetize user orders and provide some data on what the landscape looks like today.</p>
+        
+        <h2>PFOF in Traditional Finance</h2>
+        <p>In traditional finance, users place market or limit orders that are sold to trading firms for execution. Regulation ensures these orders receive reasonable execution relative to current market prices. Trading firms are willing to pay for these orders because retail flow is extremely unlikely to be toxic.</p>
+
+        <h2>PFOF in Crypto</h2>
+        <p>In crypto, applications control how user swaps get filled and subsequently routed. There are several key decision points:</p>
+        <ul>
+          <li>Setting the swap fee</li>
+          <li>Choosing between RFQ and DEX routing</li>
+          <li>Deciding whether to preserve user privacy or allow backruns and sandwiches</li>
+          <li>Selecting between priority fees and inclusion tips</li>
+          <li>Determining whether to land transactions slowly or quickly</li>
+        </ul>
+        <p>All of these decisions monetize differently and pit the interests of the user against the interests of the application.</p>
+      </div>
+
+      <div id="monetization">
+        <h1>Monetizing Solana Swaps</h1>
+        <p>The simplest way to monetize orderflow is to charge a fee for each swap. This is the approach taken by most applications on Solana and is already legible to the ecosystem. But it is not the only way apps monetize trades.</p>
+
+        <h2>Charging for Market Maker Access</h2>
+        <p>Similar to traditional PFOF, applications can charge market makers for access to fill user orders. This manifests differently if the order is filled through RFQ or DEX routing.</p>
+        <h3>RFQ Integrations</h3>
+        <p>Request-for-quote is the closest system to traditional PFOF. The obvious angles to monetize RFQ order flow are to charge market makers for connection access, bulk sell the orderflow, and internalize more flow. There are limited reports of this happening in practice but we should expect it to develop as spreads get tighter.</p>
+        <p>The downside to RFQ is communication overhead. Both the user and the market maker have to sign the transaction in most systems.</p>
+        <h3>DEX Integrations</h3>
+        <p>Prop AMMs and DEXs make meaningful profit from being connected to aggregators. Aggregators should be able to charge market makers for flow and pass it back to apps. There are also no reports of this happening yet although many have speculated that it would be a natural strategy for aggregators and frontends.</p>
+        <h2>Market Orders</h2>
+        <p>Due to path dependency, apps and wallets often end up with already-routed trades in the form of signed transactions. These take the form of market orders with slippage parameters.</p>
+        <p>The user-aligned approach is to sell the backrun to a trading firm. The extractive approach is to set poor user parameters and facilitate sandwich attacks. This creates an incentive to slow down fills to increase the value of the backrun. There are reports of both of these happening with prominent frontends on Solana.</p>
+
+        <h2>Transaction Fees</h2>
+        <p>Users have an expectation that you must pay a high transaction fee to land, and that a higher fee will get you speed and priority. Frontends overcharge users and split the proceeds between the validator, builder, inclusion service, and app or wallet. This is a fragmented market that is getting vertically integrated with builders.</p>
+      </div>
+
+      <div id="transaction-fees">
+        <h1>Understanding the Transaction Fee Market</h1>
+        <p>Almost all transaction fees on Solana are currently paid in SOL. There are two different ways that apps can set fees on a user transaction. Many apps will set both fees as we will see later.</p>
+        <ul>
+          <li><b>Priority Fees</b>: These are in-protocol tips that go directly to the validator</li>
+          <li><b>Transaction Tips</b>: These are transfers to an arbitrary SOL address of a landing service. The service then decides how much to send to the validator or builder and how much to rebate back to the user or app.</li>
+        </ul>
+        <p>Apps can route user transactions through either the vanilla RPC services or through transaction landing services that give them more flexible options to monetize high user fees. The existence of transaction landing services is mostly because of the fragmented builder market that makes transaction routing complex.</p>
+
+        <h2>The Transaction Stack</h2>
+        <div class="tx-stack-wrapper">
+          <div class="tx-stack">
+            <div class="tx-stack-col">
+              <div class="tx-stack-header"></div>
+              <div class="tx-stack-items">
+                <div class="tx-stack-box app-box">Apps</div>
+              </div>
+            </div>
+            <div class="tx-stack-arrow">→</div>
+            <div class="tx-stack-col">
+              <div class="tx-stack-header">Tx Submission</div>
+              <div class="tx-stack-items">
+                <div class="tx-stack-box">Normal RPC</div>
+                <div class="tx-stack-box">Jito</div>
+                <div class="tx-stack-box">Nozomi</div>
+                <div class="tx-stack-box">Helius</div>
+                <div class="tx-stack-box">Bloxroute</div>
+                <div class="tx-stack-box">Astralane</div>
+                <div class="tx-stack-box">Zero Slot</div>
+              </div>
+            </div>
+            <div class="tx-stack-arrow">→</div>
+            <div class="tx-stack-col">
+              <div class="tx-stack-header">Scheduler / Builder</div>
+              <div class="tx-stack-items">
+                <div class="tx-stack-box builder-box">Jito (93.5%)</div>
+                <div class="tx-stack-box builder-box">Harmonic (3%)</div>
+                <div class="tx-stack-box builder-box">Vanilla (2.5%)</div>
+                <div class="tx-stack-box builder-box">Paladin (1%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Transaction Landscape</h2>
+        <p style="font-size: 14px; color: #666; margin-bottom: 1.5em;"><em>Data collected December 1–8, 2025</em></p>
+        <p>There were 450 million transactions sent on Solana in the past week</p>
+        <ul>
+          <li>80 million flowed through Jito's landing service</li>
+          <li>10 million flowed through other landing services</li>
+        </ul>
+        <p>The most important transactions are swaps</p>
+        <ul>
+          <li>130 million are swaps</li>
+          <li>50 million are HumidiFi oracle updates</li>
+          <li>40 million are Drift</li>
+          <li>50-75 million are other market making programs</li>
+        </ul>
+
+        <h2>Priority Fee Data</h2>
+        <p>Priority fees vary dramatically by wallet activity level. Low-activity wallets pay significantly higher fees at the tail. Given that blocks are not full, these users are getting overcharged. These tips are not as easy to monetize, but the builders prefer higher fees because they can market higher yield to validators.</p>
+        <table>
+          <tr>
+            <th>Wallet Tx Count</th>
+            <th>Total Transactions</th>
+            <th>p50</th>
+            <th>p90</th>
+            <th>p99</th>
+          </tr>
+          <tr>
+            <td>1-9</td>
+            <td>16,000,000</td>
+            <td>5,000</td>
+            <td>36,650</td>
+            <td>1,005,000</td>
+          </tr>
+          <tr>
+            <td>10-99</td>
+            <td>22,000,000</td>
+            <td>6,700</td>
+            <td>127,421</td>
+            <td>3,006,790</td>
+          </tr>
+          <tr>
+            <td>100-999</td>
+            <td>32,000,000</td>
+            <td>8,007</td>
+            <td>505,000</td>
+            <td>5,005,000</td>
+          </tr>
+          <tr>
+            <td>1k-9k</td>
+            <td>66,000,000</td>
+            <td>6,000</td>
+            <td>35,350</td>
+            <td>1,005,000</td>
+          </tr>
+          <tr>
+            <td>10k-99k</td>
+            <td>62,000,000</td>
+            <td>6,700</td>
+            <td>12,855</td>
+            <td>202,011</td>
+          </tr>
+          <tr>
+            <td>100k-999k</td>
+            <td>59,000,000</td>
+            <td>5,401</td>
+            <td>11,704</td>
+            <td>109,424</td>
+          </tr>
+          <tr>
+            <td>1M-9M</td>
+            <td>136,000,000</td>
+            <td>5,150</td>
+            <td>11,000</td>
+            <td>48,803</td>
+          </tr>
+          <tr>
+            <td>10M-99M</td>
+            <td>38,000,000</td>
+            <td>5,013</td>
+            <td>5,106</td>
+            <td>7,300</td>
+          </tr>
+        </table>
+        <p style="font-size: 14px; color: #666;">Priority fee units are in lamports</p>
+
+        <h2>Transaction Landing Services</h2>
+        <p>Overtipping on transaction landing services is the most obvious way to improve transaction monetization. If there was actual congestion on transaction inclusion it may be rational to set extremely high tips in certain situations. But given these numbers during a relatively calm week, it is clear that users are just being overcharged and the excess tip is split between apps and service providers.</p>
+        <table>
+          <tr>
+            <th></th>
+            <th>Swap Tips</th>
+            <th>Swap Count</th>
+            <th>Other Tips</th>
+            <th>Other Count</th>
+          </tr>
+          <tr>
+            <td>Jito</td>
+            <td>$300,000</td>
+            <td>24,000,000</td>
+            <td>$1,100,000</td>
+            <td>55,000,000</td>
+          </tr>
+          <tr>
+            <td>Nozomi</td>
+            <td>$1,250,000</td>
+            <td>2,500,000</td>
+            <td>$330,000</td>
+            <td>1,000,000*</td>
+          </tr>
+          <tr>
+            <td>Bloxroute</td>
+            <td>$150,000</td>
+            <td>250,000</td>
+            <td>$35,000</td>
+            <td>50,000</td>
+          </tr>
+          <tr>
+            <td>Astralane</td>
+            <td>$150,000</td>
+            <td>1,600,000</td>
+            <td>$60,000</td>
+            <td>1,000,000</td>
+          </tr>
+          <tr>
+            <td>Zero Slot</td>
+            <td>$320,000</td>
+            <td>2,250,000</td>
+            <td>$60,000</td>
+            <td>400,000</td>
+          </tr>
+        </table>
+        <p style="font-size: 14px; color: #666;">* HumidiFi does not pay per tx so these numbers undershoot substantially for Nozomi</p>
+      </div>
+
+      <div id="axiom-case-study">
+        <h1>Case Study: Axiom</h1>
+        <p style="font-size: 14px; color: #666; margin-bottom: 1.5em;"><em>Data collected December 1–8, 2025</em></p>
+        <p>Axiom generates more transaction fees than any other app on Solana. They do not have the most transactions but they dramatically overcharge their users.</p>
+        <p>Axiom users are so sensitive to speed and are trading such high volatility assets that the app is able to double-charge the users without any blowback.</p>
+        <h2>Priority Fees</h2>
+        <table>
+          <tr>
+            <th>Wallet Tx Count</th>
+            <th>Total Transactions</th>
+            <th>p50</th>
+            <th>p90</th>
+            <th>p99</th>
+          </tr>
+          <tr>
+            <td>1-9</td>
+            <td>113,029</td>
+            <td>1,005,000</td>
+            <td>3,005,000</td>
+            <td>15,044,032</td>
+          </tr>
+          <tr>
+            <td>10-99</td>
+            <td>928,373</td>
+            <td>1,005,000</td>
+            <td>2,510,681</td>
+            <td>10,950,314</td>
+          </tr>
+          <tr>
+            <td>100-999</td>
+            <td>3,358,861</td>
+            <td>505,000</td>
+            <td>2,005,000</td>
+            <td>10,005,000</td>
+          </tr>
+          <tr>
+            <td>1k-9k</td>
+            <td>1,783,981</td>
+            <td>105,000</td>
+            <td>1,010,024</td>
+            <td>7,116,000</td>
+          </tr>
+          <tr>
+            <td>10k-99k</td>
+            <td>297,197</td>
+            <td>6,000</td>
+            <td>15,000</td>
+            <td>1,005,000</td>
+          </tr>
+        </table>
+        <p style="font-size: 14px; color: #666;">Priority fee units are in lamports</p>
+
+        <h2>Tips by Landing Service</h2>
+        <table>
+          <tr>
+            <th>Landing Service</th>
+            <th>Total Transactions</th>
+            <th>p50</th>
+            <th>p90</th>
+            <th>p99</th>
+          </tr>
+          <tr>
+            <td>Nozomi</td>
+            <td>2,567,189</td>
+            <td>$0.13</td>
+            <td>$1.30</td>
+            <td>$3.25</td>
+          </tr>
+          <tr>
+            <td>Zero Slot</td>
+            <td>1,204,008</td>
+            <td>$0.01</td>
+            <td>$0.18</td>
+            <td>$1.95</td>
+          </tr>
+          <tr>
+            <td>Jito</td>
+            <td>916,178</td>
+            <td>$0.001</td>
+            <td>$0.04</td>
+            <td>$0.12</td>
+          </tr>
+          <tr>
+            <td>Astralane</td>
+            <td>755,794</td>
+            <td>$0.001</td>
+            <td>$0.008</td>
+            <td>$0.32</td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="conclusion">
+        <h1>Conclusion</h1>
+        <p>In the days after I gave this talk, I heard from folks in the industry that the backrunning profit on flow from Axiom and other trading apps is possibly quite a bit higher than the profit generated from overtipping. I have not done the work to verify this but may investigate it further in the future.</p>
+        <p>Regardless, there are numerous ways to monetize transaction orderflow on Solana besides the fee, and I hope these are more obvious after reading this article.</p>
+        <h2>Better Market Structure is Possible</h2>
+        <p>User and application incentives are seriously misaligned. Additionally, users have no understanding of how large a normal transaction fee should be given the historical issues with the Solana transaction pipeline over the past few years.</p>
+        <p>The most important variable for user welfare is to make the transaction fee system standardized and legible to the user so they can understand when they are being overcharged. One approach to this is MCP + Priority Ordering that should be coming to Solana in 2026.</p>
+        <p>Another idea is to add the concept of "market buy for inclusion" to the protocol. The user should be able to specify "I want to pay the minimum to get included up to X Lamports." This exists on Ethereum with dynamic base fees.</p>
+        <p>To compete with traditional financial systems, Solana needs to improve the efficiency of the system and take user welfare seriously.</p>
+      </div>
+
+      <p style="font-size: 14px; color: #666; margin-top: 0em;">If you enjoy this type of research, come work with me at <a href="research" style="color: #666;">Meridian</a>.</p>
+
+    </div>
+  </body>
+</html>
