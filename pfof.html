@@ -92,19 +92,50 @@
       }
       @media (max-width: 640px) {
         .tx-stack-wrapper {
-          padding: 1.5em 2em;
+          padding: 1em 1em;
+          margin: 1.5em 0;
         }
         .tx-stack {
           flex-direction: column;
-          gap: 16px;
+          gap: 8px;
+        }
+        .tx-stack-col {
+          width: 100%;
         }
         .tx-stack-arrow {
-          transform: rotate(90deg);
+          margin-top: 0;
+          font-size: 14px;
+        }
+        .tx-stack-arrow::before {
+          content: "↓";
+        }
+        .tx-stack-arrow span {
+          display: none;
+        }
+        .tx-stack-header {
+          font-size: 10px;
+          margin-bottom: 6px;
+          height: auto;
+        }
+        .tx-stack-items {
+          gap: 4px;
+          width: 100%;
         }
         .tx-stack-box {
           min-width: auto;
           width: 100%;
-          max-width: 200px;
+          max-width: 160px;
+          padding: 6px 12px;
+          font-size: 12px;
+          margin: 0 auto;
+        }
+        .tx-stack-box.app-box {
+          padding: 20px 12px;
+          font-size: 13px;
+          max-width: 140px;
+        }
+        .tx-stack-box.builder-box {
+          padding: 10px 12px;
         }
       }
     </style>
@@ -114,7 +145,7 @@
     <div id="preamble">
       <p><a href="/">&larr; Back</a></p>
       <h1 class="title">Payment for Order Flow on Solana</h1>
-      <p class="subtitle" style="font-weight: normal; font-style: italic;">This is adapted from a talk I gave at MEV Day before Breakpoint in 2025. All data in this article is from the week of December 1–8, 2025.</p>
+      <p class="subtitle" style="font-weight: normal; font-style: italic;">This is adapted from an unrecorded talk I gave at MEV Day before Breakpoint in 2025. All data in this article is from the week of December 1–8, 2025. It was collected by querying historical data from Allium and spending hours manually categorizing tip and fee addresses.</p>
 
       <div id="introduction">
         <h1>Introduction</h1>
@@ -173,7 +204,7 @@
                 <div class="tx-stack-box app-box">Apps</div>
               </div>
             </div>
-            <div class="tx-stack-arrow">→</div>
+            <div class="tx-stack-arrow"><span>→</span></div>
             <div class="tx-stack-col">
               <div class="tx-stack-header">Tx Submission</div>
               <div class="tx-stack-items">
@@ -186,7 +217,7 @@
                 <div class="tx-stack-box">Zero Slot</div>
               </div>
             </div>
-            <div class="tx-stack-arrow">→</div>
+            <div class="tx-stack-arrow"><span>→</span></div>
             <div class="tx-stack-col">
               <div class="tx-stack-header">Scheduler / Builder</div>
               <div class="tx-stack-items">
