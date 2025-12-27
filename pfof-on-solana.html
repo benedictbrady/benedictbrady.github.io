@@ -153,7 +153,7 @@
         <p>This report is an attempt to pull back the curtain on how apps monetize user orders and provide some data on what the landscape looks like today.</p>
         
         <h2>PFOF in Traditional Finance</h2>
-        <p>In traditional finance, users place market or limit orders that are sold to trading firms for execution. Regulation ensures these orders receive reasonable execution relative to current market prices. Trading firms are willing to pay for these orders because retail flow is extremely unlikely to be toxic.</p>
+        <p>In traditional finance, users place market or limit orders that are sold to trading firms for execution. Regulation ensures these orders receive reasonable execution relative to current market prices. Trading firms are willing to pay to fill these orders because retail flow is extremely unlikely to be toxic.</p>
 
         <h2>PFOF in Crypto</h2>
         <p>In crypto, applications control how user swaps get filled and subsequently routed. There are several key decision points:</p>
@@ -172,18 +172,23 @@
         <p>The simplest way to monetize orderflow is to charge a fee for each swap. This is the approach taken by most applications on Solana and is already legible to the ecosystem. But it is not the only way apps monetize trades.</p>
 
         <h2>Charging for Market Maker Access</h2>
-        <p>Similar to traditional PFOF, applications can charge market makers for access to fill user orders. This manifests differently if the order is filled through RFQ or DEX routing.</p>
+        <p>Similar to traditional PFOF, applications can charge market makers for access to fill user orders. This manifests differently if the order is filled through RFQ or DEX routing. At this point it is not clear which approach is more profitable for applications.</p>
         <h3>RFQ Integrations</h3>
-        <p>Request-for-quote is the closest system to traditional PFOF. The obvious angles to monetize RFQ order flow are to charge market makers for connection access, bulk sell the orderflow, and internalize more flow. There are limited reports of this happening in practice but we should expect it to develop as spreads get tighter.</p>
-        <p>The downside to RFQ is communication overhead. Both the user and the market maker have to sign the transaction in most systems.</p>
+        <p>Request-for-quote is the closest system to traditional PFOF. The obvious angles to monetize RFQ order flow are:</p>
+        <ul>
+          <li>Charge market makers for connection access</li>
+          <li>Bulk selling the orderflow</li>
+          <li>Internalizing more flow</li>
+        </ul>
+        <p>There are limited reports of this happening in practice but we should expect it to develop as spreads get tighter.</p>
         <h3>DEX Integrations</h3>
-        <p>Prop AMMs and DEXs make meaningful profit from being connected to aggregators. Aggregators should be able to charge market makers for flow and pass it back to apps. There are also no reports of this happening yet although many have speculated that it would be a natural strategy for aggregators and frontends.</p>
+        <p>Prop AMMs and DEXs make meaningful profit from being connected to aggregators. Aggregators should be able to charge market makers for flow and pass it back to apps. There are also no reports of this happening yet although many have speculated that it would be a natural strategy for aggregators and frontends and may begin to happen quietly.</p>
         <h2>Market Orders</h2>
-        <p>Due to path dependency, apps and wallets often end up with already-routed trades in the form of signed transactions. These take the form of market orders with slippage parameters.</p>
-        <p>The user-aligned approach is to sell the backrun to a trading firm. The extractive approach is to set poor user parameters and facilitate sandwich attacks. This creates an incentive to slow down fills to increase the value of the backrun. There are reports of both of these happening with prominent frontends on Solana.</p>
+        <p>Due to path dependency, apps and wallets often end up with already-routed trades in the form of signed transactions. You can think of these as market orders with slippage parameters.</p>
+        <p>The user-aligned approach is to sell the backrun to a trading firm. The extractive approach is to facilitate sandwich attacks. This creates an incentive to slow down transaction landing to increase the value of the backrun. There are reports of both of these happening with prominent frontends on Solana.</p>
 
         <h2>Transaction Fees</h2>
-        <p>Users have an expectation that you must pay a high transaction fee to land, and that a higher fee will get you speed and priority. Frontends overcharge users and split the proceeds between the validator, builder, inclusion service, and themselves.</p>
+        <p>Users have an expectation that they must pay a high transaction fee to land, and that a higher fee will get them speed and priority. This creates an incentive for frontends to overcharge their users and keep the excess fee for themselves.</p>
       </div>
 
       <div id="transaction-fees">
@@ -193,7 +198,7 @@
           <li><b>Priority Fees</b>: These are in-protocol tips that go directly to the validator</li>
           <li><b>Transaction Tips</b>: These are transfers to an arbitrary SOL address of a landing service. The service then decides how much to send to the validator or builder and how much to rebate back to the user or app.</li>
         </ul>
-        <p>Apps can route user transactions through either the vanilla RPC services or through transaction landing services that give them more flexible options to monetize high user fees. The existence of transaction landing services is mostly because of the fragmented builder market that makes transaction routing complex. We are seeing some vertical integration between builders and landing services.</p>
+        <p>Apps can route user transactions through either the vanilla RPC services or through transaction landing services that give them more flexible options to monetize high user fees. The existence of transaction landing services is mostly because of the fragmented builder market that makes transaction routing complex.</p>
 
         <h2>The Transaction Stack</h2>
         <div class="tx-stack-wrapper">
@@ -235,14 +240,14 @@
         <p>There were 450 million transactions sent on Solana in the past week</p>
         <ul>
           <li>80 million flowed through Jito's landing service</li>
-          <li>10 million flowed through other landing services</li>
+          <li>10 million flowed through other landing services (not including HumidiFi)</li>
         </ul>
-        <p>The most important transactions are swaps</p>
+        <p>Most of the transactions are related to trading</p>
         <ul>
           <li>130 million are swaps</li>
           <li>50 million are HumidiFi oracle updates</li>
-          <li>40 million are Drift</li>
-          <li>50-75 million are other market making programs</li>
+          <li>40 million are Drift maker updates</li>
+          <li>50-75 million are other market making transactions</li>
         </ul>
 
         <h2>Priority Fee Data</h2>
@@ -374,7 +379,7 @@
         <h1>Case Study: Axiom</h1>
         <p style="font-size: 14px; color: #666; margin-bottom: 1.5em;"><em>Data collected December 1–8, 2025</em></p>
         <p>Axiom generates more transaction fees than any other app on Solana. This is because they dramatically overcharge their users.</p>
-        <p>Axiom users are so sensitive to speed and are trading such high volatility assets that the app is able to double-charge the users without any blowback. This generates a substantial kickback to Axiom above the swap fees they collect.</p>
+        <p>Axiom users are so sensitive to perceived speed that the app is able to double-charge the users without any blowback. This generates a substantial kickback to Axiom above the swap fees they collect.</p>
         <h2>Axiom Priority Fees</h2>
         <table>
           <tr>
@@ -462,12 +467,14 @@
         </table>
       </div>
 
+      <p>I would guess that the vast meajority of the transaction fees paid by Axiom users end up back in the pocket of the Axiom team.</p>
+
       <div id="conclusion">
         <h1>Conclusion</h1>
-        <p>In the days after I gave this talk, I heard from folks in the industry that the backrunning profit on flow from Axiom and other trading apps is possibly quite a bit higher than the profit generated from overtipping. I have not done the work to verify this but may investigate it further in the future.</p>
+        <p>In the days after I gave this talk, I heard from folks in the industry that the backrunning profit on flow from Axiom and other trading apps is possibly quite a bit higher than the profit generated from overtipping. I have not done the work to verify this but may investigate it in the future.</p>
         <p>Regardless, there are numerous ways to monetize transaction orderflow on Solana besides the swap fee, and I hope these are more obvious after reading this article.</p>
         <h2>Better Market Structure is Possible</h2>
-        <p>User incentives and application incentives are seriously misaligned. Additionally, users have no understanding of how large a normal transaction fee should be given the historical issues with the Solana transaction pipeline over the past few years.</p>
+        <p>User incentives and application incentives are seriously misaligned. Users have no understanding of how large a normal transaction fee should be given the issues with the Solana transaction pipeline over the past few years.</p>
         <p>The most important variable for user welfare is to make the transaction fee system standardized and legible to the user so they can understand when they are being overcharged. One approach to this is MCP + Priority Ordering that should be coming to Solana in 2026.</p>
         <p>Another idea is to add the concept of "market buy for inclusion" to the protocol. The user should be able to specify "I want to pay the minimum to get included up to X Lamports." This exists on Ethereum with dynamic base fees.</p>
         <p>To compete with traditional financial systems, Solana needs to improve the efficiency of the system and take user welfare seriously.</p>
